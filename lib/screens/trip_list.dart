@@ -71,17 +71,13 @@ class _TripListState extends State<TripList> {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          'Create your trips with us.',
+                          'Create your \ntrips with us.',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 30.0,
                             letterSpacing: 1.0,
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(''),
                       ),
                     ],
                   )
@@ -105,7 +101,7 @@ class _TripListState extends State<TripList> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  this.tripList[position].departure,
+                                  this.tripList[position].departure ?? 'Lagos',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18.0),
@@ -128,7 +124,8 @@ class _TripListState extends State<TripList> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  this.tripList[position].departureDate,
+                                  this.tripList[position].departureDate ??
+                                      'Jan 01, 2020',
                                   style: TextStyle(fontSize: 13.0),
                                 ),
                                 Text(
@@ -142,7 +139,8 @@ class _TripListState extends State<TripList> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  this.tripList[position].departureTime,
+                                  this.tripList[position].departureTime ??
+                                      '00:00',
                                   style: TextStyle(fontSize: 13.0),
                                 ),
                                 Text(

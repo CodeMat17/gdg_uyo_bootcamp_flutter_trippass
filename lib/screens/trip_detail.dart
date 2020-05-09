@@ -20,16 +20,17 @@ class TripDetail extends StatefulWidget {
 
 class _TripDetailState extends State<TripDetail> {
   //texFields controllers
-  var departureController = TextEditingController();
-  var departureDate = TextEditingController();
-  var departureTime = TextEditingController();
-  var destinationController = TextEditingController();
-  var destinationDate = TextEditingController();
-  var destinationTime = TextEditingController();
+  TextEditingController departureController = TextEditingController();
+  TextEditingController departureDate = TextEditingController();
+  TextEditingController departureTime = TextEditingController();
+  TextEditingController destinationController = TextEditingController();
+  TextEditingController destinationDate = TextEditingController();
+  TextEditingController destinationTime = TextEditingController();
+  TextEditingController categorySelected = TextEditingController();
 
   // dropDown menu categories
-  final _categories = ['Business', 'Education', 'Medical', 'Vacation'];
-  String categorySelected = 'Medical';
+  final tripType = ['Business', 'Education', 'Medical', 'Vacation'];
+  //String categorySelected = 'Medical';
 
   // databaseHelper
   DatabaseHelper helper = DatabaseHelper();
@@ -38,10 +39,6 @@ class _TripDetailState extends State<TripDetail> {
   String appBarTitle;
   TripModel tripModel;
   _TripDetailState(this.tripModel, this.appBarTitle);
-
-  //dateTime picker formField
-  final dateFormat = DateFormat("MMMM d, yyyy");
-  final timeFormat = DateFormat("h:mm a");
 
   //validation
   bool _validate = false;
@@ -59,15 +56,13 @@ class _TripDetailState extends State<TripDetail> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = Theme.of(context).textTheme.title;
-
     departureController.text = tripModel.departure;
     departureDate.text = tripModel.departureDate;
     departureTime.text = tripModel.departureTime;
     destinationController.text = tripModel.destination;
     destinationDate.text = tripModel.destinationDate;
     destinationTime.text = tripModel.destinationTime;
-    categorySelected = tripModel.categorySelected;
+    categorySelected.text = tripModel.categorySelected;
 
     return Scaffold(
       appBar: AppBar(
@@ -88,6 +83,7 @@ class _TripDetailState extends State<TripDetail> {
                       keyboardType: TextInputType.text,
                       onChanged: (value) {
                         debugPrint('something changed');
+                        this.tripModel.departure = departureController.text;
                         updateDeparture();
                       },
                       decoration: InputDecoration(
@@ -100,52 +96,51 @@ class _TripDetailState extends State<TripDetail> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Expanded(
-                          flex: 4,
-                          child: TextField(
-                            controller: departureDate,
-                            keyboardType: TextInputType.datetime,
-                            onChanged: (value) {
-                              debugPrint('something changed');
-                              updateDepartureDate();
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'From: ',
-                              labelText: 'Enter Date',
-                            ),
-                          ),
-                        ),
-                        Expanded(flex: 1, child: Text('')),
-//                        Expanded(
-//                          flex: 3,
-//                          child: DateTimeField(
-//                              format: timeFormat,
-//                              onShowPicker: (
-//                                context,
-//                                currentValue,
-//                              ) async {
-//                                departureTime = await showTimePicker(
-//                                  context: context,
-//                                  initialTime: TimeOfDay.fromDateTime(
-//                                      currentValue ?? DateTime.now()),
-//                                );
-//                                return DateTimeField.convert(departureTime);
-//                              }),
-//                        ),
+                            flex: 4,
+                            child: DateTimeField(
+                              controller: departureDate,
+                              format: DateFormat.yMMMd("en_US"),
+                              onShowPicker: (context, currentValue) async {
+                                return await showDatePicker(
+                                  context: context,
+                                  initialDate: currentValue ?? DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2100),
+                                );
+                              },
+                              decoration:
+                                  InputDecoration(labelText: 'Enter Date'),
+                              onChanged: (dt) {
+                                debugPrint('$dt');
+                                this.tripModel.departureDate =
+                                    DateFormat.yMMMd("en_US").format(dt);
+                                debugPrint(tripModel.departureDate);
+                                debugPrint(departureDate.text);
+                                updateDepartureDate();
+                              },
+                            )),
+                        SizedBox(width: 20.0),
                         Expanded(
                           flex: 3,
-                          child: TextField(
+                          child: DateTimeField(
                             controller: departureTime,
-                            keyboardType: TextInputType.datetime,
-                            onChanged: (value) {
-                              debugPrint('something changed');
+                            format: DateFormat.jm(),
+                            decoration:
+                                InputDecoration(labelText: 'Enter Time'),
+                            onShowPicker: (context, currentValue) async {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime: currentValue ?? TimeOfDay.now(),
+                              );
+                              return DateTimeField.convert(time);
+                            },
+                            onChanged: (t) {
+                              this.tripModel.departureTime =
+                                  DateFormat.jm().format(t);
                               updateDepartureTime();
                             },
-                            decoration: InputDecoration(
-                              hintText: 'From:',
-                              labelText: 'Enter Time',
-                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                     TextField(
@@ -165,61 +160,76 @@ class _TripDetailState extends State<TripDetail> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Expanded(
-                          flex: 4,
-                          child: TextField(
-                            controller: destinationDate,
-                            keyboardType: TextInputType.datetime,
-                            onChanged: (value) {
-                              debugPrint('something changed');
-                              updateDestinationDate();
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'To:',
-                              labelText: 'Enter Date',
-                            ),
-                          ),
-                        ),
-                        Expanded(flex: 1, child: Text('')),
+                            flex: 4,
+                            child: DateTimeField(
+                              controller: destinationDate,
+                              format: DateFormat.yMMMd("en_US"),
+                              onShowPicker: (context, currentValue) async {
+                                return await showDatePicker(
+                                  context: context,
+                                  initialDate: currentValue ?? DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2100),
+                                );
+                              },
+                              decoration:
+                                  InputDecoration(labelText: 'Enter Date'),
+                              onChanged: (dt) {
+                                debugPrint('$dt');
+                                this.tripModel.destinationDate =
+                                    DateFormat.yMMMd("en_US").format(dt);
+                                debugPrint(tripModel.destinationDate);
+                                debugPrint(destinationDate.text);
+                                updateDestinationDate();
+                              },
+                            )),
+                        SizedBox(width: 20.0),
                         Expanded(
                           flex: 3,
-                          child: TextField(
+                          child: DateTimeField(
                             controller: destinationTime,
-                            keyboardType: TextInputType.datetime,
-                            onChanged: (value) {
-                              debugPrint('something changed');
+                            format: DateFormat.jm(),
+                            decoration:
+                                InputDecoration(labelText: 'Enter Time'),
+                            onShowPicker: (context, currentValue) async {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime: currentValue ?? TimeOfDay.now(),
+                              );
+                              return DateTimeField.convert(time);
+                            },
+                            onChanged: (t) {
+                              this.tripModel.destinationTime =
+                                  DateFormat.jm().format(t);
                               updateDestinationTime();
                             },
-                            decoration: InputDecoration(
-                              hintText: 'To: ',
-                              labelText: 'Enter Time',
-                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                     SizedBox(height: 30.0),
                     Row(
                       children: <Widget>[
-                        Expanded(child: Text('Trip Type: ')),
                         Expanded(
                           child: DropdownButton<String>(
-                            items: _categories.map((String dropDownStringItem) {
+                            items: tripType.map((String value) {
                               return DropdownMenuItem<String>(
-                                value: dropDownStringItem,
-                                child: Text(dropDownStringItem),
+                                child: Text(value),
+                                value: value,
                               );
                             }).toList(),
-                            style: textStyle,
-                            value:
-                                getCategoryAsString(tripModel.categorySelected),
+                            hint: Text('Trip Type'),
+                            value: getCategoryAsString(categorySelected.text),
+                            //value: tripModel.categorySelected,
                             onChanged: (value) {
                               setState(() {
-                                debugPrint('$value');
-                                categorySelected = value;
+                                debugPrint('Value: $value');
+                                //getCategoryAsString(categorySelected.text);
+                                categorySelected.text = value;
+                                this.tripModel.categorySelected = value;
                                 debugPrint(
-                                    'categorySelected: $categorySelected');
+                                    'categorySelected: $tripModel.categorySelected.');
                                 updateCategorySelected();
-                                getCategoryAsString(categorySelected);
                               });
                             },
                           ),
@@ -270,40 +280,21 @@ class _TripDetailState extends State<TripDetail> {
     );
   }
 
-  // convert the string category in the
-// form of integer before saving to db
-//  void updateCategoryAsInt(String value) {
-//    switch (value) {
-//      case 'Business':
-//        tripModel.category = 1;
-//        break;
-//      case 'Education':
-//        tripModel.category = 2;
-//        break;
-//      case 'Medical':
-//        tripModel.category = 3;
-//        break;
-//      case 'Vacation':
-//        tripModel.category = 4;
-//        break;
-//    }
-//  }
-
   // convert int category to string category and display in dropdown
   String getCategoryAsString(String value) {
     String category;
     switch (value) {
       case 'Business':
-        category = _categories[0]; // 'Business
+        category = tripType[0]; // 'Business
         break;
       case 'Education':
-        category = _categories[1]; // 'Business
+        category = tripType[1]; // 'Business
         break;
       case 'Medical':
-        category = _categories[2]; // 'Business
+        category = tripType[2]; // 'Business
         break;
       case 'Vacation':
-        category = _categories[3]; // 'Business
+        category = tripType[3]; // 'Business
         break;
     }
     return category;
@@ -335,7 +326,7 @@ class _TripDetailState extends State<TripDetail> {
   }
 
   void updateCategorySelected() {
-    tripModel.categorySelected = categorySelected;
+    tripModel.categorySelected = categorySelected.text;
   }
 
   // save data to database
